@@ -5,29 +5,96 @@
 #include <vector>
 
 #include "process.h"
+#include "linux_parser.h"
 
 using std::string;
 using std::to_string;
 using std::vector;
 
-// TODO: Return this process's ID
-int Process::Pid() { return 0; }
+Process::Process(int pId) : ProcessId_(pId){
+    calculateCpuUsage();
+    determineCommand();
+    determineRam();
+    determineUptime();
+    determineUser();
+}
 
-// TODO: Return this process's CPU utilization
-float Process::CpuUtilization() { return 0; }
+int Process::Pid() { return ProcessId_; }
 
-// TODO: Return the command that generated this process
-string Process::Command() { return string(); }
+float Process::CpuUtilization()  { return Cpu_; }
 
-// TODO: Return this process's memory utilization
-string Process::Ram() { return string(); }
+string Process::Command() { return command_; }
 
-// TODO: Return the user (name) that generated this process
-string Process::User() { return string(); }
+string Process::Ram() { return ram_; }
 
-// TODO: Return the age of this process (in seconds)
-long int Process::UpTime() { return 0; }
+string Process::User() { return user_; }
 
-// TODO: Overload the "less than" comparison operator for Process objects
-// REMOVE: [[maybe_unused]] once you define the function
-bool Process::operator<(Process const& a[[maybe_unused]]) const { return true; }
+long int Process::UpTime() { return uptime_; }
+ 
+
+void Process::calculateCpuUsage() { 
+    
+  std::string line, key;
+  float  utime, stime, cutime, cstime, starttime, total_time, seconds;
+
+  std::ifstream filestream (LinuxParser::kProcDirectory + "/" + std::to_string(ProcessId_) + LinuxParser::kStatFilename);
+
+  if(filestream.is_open())
+  {
+    if(std::getline(filestream, line))
+    {
+      std::istringstream linestream(line);
+
+      for(int i = 1; i <= 22; i++)
+      {
+          linestream >> key; 
+          if(i==14)
+          {
+              utime = std::stof (key);
+          }
+          else if(i==15)
+          {
+              stime = std::stof (key);
+          }
+          else if(i==16)
+          {
+              cutime = std::stof (key);
+          }
+          else if(i==17)
+          {
+              cstime = std::stof (key);
+          }
+          else if(i==22)
+          {
+              starttime = std::stof (key);
+          }
+      }
+    }
+  }
+
+  total_time = (utime + stime + cutime + cstime)/sysconf(_SC_CLK_TCK); 
+  seconds = LinuxParser::UpTime() - (starttime/sysconf(_SC_CLK_TCK));
+  Cpu_ = 100*(total_time / seconds);   
+}
+ 
+void Process::determineCommand() { 
+    command_ = LinuxParser::Command(Pid());
+  }
+
+void Process::determineRam() { 
+long PUpTime;
+  try {
+       PUpTime = std::stol (LinuxParser::Ram(Pid()));
+    PUpTime = PUpTime / 1024;
+  } catch (const std::invalid_argument& arg) {
+    PUpTime = 100;
+  }
+    ram_ = std::to_string(PUpTime); 
+}
+
+void Process::determineUser() { user_ = LinuxParser::User(Pid()); }
+
+void Process::determineUptime() { uptime_ = LinuxParser::UpTime(Pid()); }
+
+ 
+bool Process::operator<(Process const& a) const { return a.Cpu_ > this->Cpu_; }
