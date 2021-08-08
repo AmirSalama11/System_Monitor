@@ -74,7 +74,7 @@ void Process::calculateCpuUsage() {
 
   total_time = (utime + stime + cutime + cstime)/sysconf(_SC_CLK_TCK); 
   seconds = LinuxParser::UpTime() - (starttime/sysconf(_SC_CLK_TCK));
-  Cpu_ = 100*(total_time / seconds);   
+  Cpu_ = (total_time / seconds);   
 }
  
 void Process::determineCommand() { 
@@ -97,4 +97,4 @@ void Process::determineUser() { user_ = LinuxParser::User(Pid()); }
 void Process::determineUptime() { uptime_ = LinuxParser::UpTime(Pid()); }
 
  
-bool Process::operator<(Process const& a) const { return a.Cpu_ > this->Cpu_; }
+bool Process::operator<(Process const& a) const { return a.Cpu_ < this->Cpu_; }
