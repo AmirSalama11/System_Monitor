@@ -5,28 +5,18 @@
 using std::string;
 
  string Format::ElapsedTime(long seconds) {
-  string time = "00:00:00";
-  long cal = 0;
-  if (seconds > 0) {
-    // calculate hours
-    cal = seconds / 3600;
-    time = TimeValueToString(cal) + ":";
-    // calculate minutes
-    cal = (seconds - (cal*3600)) / 60;
-    time += TimeValueToString(cal) + ":";
-    // calculate seconds
-    cal = seconds % 60;
-    time += TimeValueToString(cal);
-  }
+  string timeFormat = "";
+  long temp = 0;
 
-  return time;
-}
+  // calculate hours
+  temp = seconds / 3600;
+  timeFormat = temp<10? "0" + std::to_string(temp) + ":" : "" + std::to_string(temp) + ":";
+  // calculate minutes
+  temp = (seconds - (temp*3600)) / 60;
+  timeFormat += temp<10? "0" + std::to_string(temp) + ":" : "" + std::to_string(temp) + ":";
+  // calculate seconds
+  temp = seconds % 60;
+  timeFormat += temp<10? "0" + std::to_string(temp) : "" + std::to_string(temp);
 
-// check if calculated number is smaller than 10 and return the appropriate
-// string
-std::string Format::TimeValueToString(long time) {
-  if (time < 10)
-    return "0" + std::to_string(time);
-  else
-    return std::to_string(time);
+  return timeFormat;
 }

@@ -12,27 +12,33 @@ using std::to_string;
 using std::vector;
 
 Process::Process(int pId) : ProcessId_(pId){
-    calculateCpuUsage();
-    determineCommand();
-    determineRam();
-    determineUptime();
-    determineUser();
+    ProcessCPU();
 }
 
 int Process::Pid() { return ProcessId_; }
 
 float Process::CpuUtilization()  { return Cpu_; }
 
-string Process::Command() { return command_; }
+string Process::Command() { 
+  return LinuxParser::Command(Pid()); }
 
-string Process::Ram() { return ram_; }
+string Process::Ram() { 
+  long ProcessRam;
+  try {
+       ProcessRam = std::stol (LinuxParser::Ram(Pid()));
+    ProcessRam /= 1024;
+  } catch (const std::invalid_argument& arg) {
+    ProcessRam = 0;
+  }
+    
+  return std::to_string(ProcessRam); 
+}
 
-string Process::User() { return user_; }
+string Process::User() { return LinuxParser::User(Pid()); }
 
-long int Process::UpTime() { return uptime_; }
- 
+long int Process::UpTime() { return LinuxParser::UpTime(Pid()); }
 
-void Process::calculateCpuUsage() { 
+void Process::ProcessCPU() { 
     
   std::string line, key;
   float  utime, stime, cutime, cstime, starttime, total_time, seconds;
@@ -76,25 +82,5 @@ void Process::calculateCpuUsage() {
   seconds = LinuxParser::UpTime() - (starttime/sysconf(_SC_CLK_TCK));
   Cpu_ = (total_time / seconds);   
 }
- 
-void Process::determineCommand() { 
-    command_ = LinuxParser::Command(Pid());
-  }
-
-void Process::determineRam() { 
-long PUpTime;
-  try {
-       PUpTime = std::stol (LinuxParser::Ram(Pid()));
-    PUpTime = PUpTime / 1024;
-  } catch (const std::invalid_argument& arg) {
-    PUpTime = 100;
-  }
-    ram_ = std::to_string(PUpTime); 
-}
-
-void Process::determineUser() { user_ = LinuxParser::User(Pid()); }
-
-void Process::determineUptime() { uptime_ = LinuxParser::UpTime(Pid()); }
-
  
 bool Process::operator<(Process const& a) const { return a.Cpu_ < this->Cpu_; }
