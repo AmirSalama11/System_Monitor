@@ -3,11 +3,10 @@
 #include "processor.h"
 #include "linux_parser.h"
 
-// TODO: Return the aggregate CPU utilization
 float Processor::Utilization() { 
     std::vector<long> CpuVec = Processor::ConvToLong(LinuxParser::CpuUtilization());
 
-    float tot, prvtot, CpuTime, CpuIdleTime, CurrCpuTime, CurrCpuIdleTime;
+    float tot, CpuTime, CpuIdleTime, CurrCpuTime, CurrCpuIdleTime;
     
     CurrCpuIdleTime = (CpuVec[3])  + (CpuVec[4]);
     CurrCpuTime = (CpuVec[0]) + (CpuVec[1]) + (CpuVec[2])
@@ -17,7 +16,6 @@ float Processor::Utilization() {
     CpuTime =  CurrCpuTime - PrvCpuTime;
     CpuIdleTime =  CurrCpuIdleTime - PrvCpuIdleTime;
 
-    prvtot = PrvCpuTime + PrvCpuIdleTime;
     tot = CpuTime + CpuIdleTime;
     
     PrvCpuTime = CurrCpuTime;
@@ -30,7 +28,7 @@ std::vector<long> Processor::ConvToLong(std::vector<std::string> inp)
 {
   std::vector<long> ResVec{};
 
-  for(int i =0; i < inp.size(); i++)
+  for(int i =0; i < (int)inp.size(); i++)
   {
     try {
         ResVec.push_back(std::stol (inp[i]));

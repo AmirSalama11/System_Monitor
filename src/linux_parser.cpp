@@ -120,21 +120,7 @@ long LinuxParser::UpTime() {
 
   return UpTime; 
 }
-
-// TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
-
-// TODO: Read and return the number of active jiffies for a PID
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { return 0; }
-
-// TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
-
-// TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { return 0; }
-
-// TODO: Read and return CPU utilization
+ 
 vector<string> LinuxParser::CpuUtilization() { 
   vector<std::string> Cpu{};
   Cpu.clear();
@@ -309,7 +295,7 @@ string LinuxParser::User(int pid) {
  
 long LinuxParser::UpTime(int pid) { 
   long PUpTime;
-  std::string line, key, value1;
+  std::string line, value;
 
   std::ifstream filestream (kProcDirectory + "/"  + std::to_string(pid) + kStatFilename);
 
@@ -319,14 +305,14 @@ long LinuxParser::UpTime(int pid) {
       {
         std::istringstream linestream(line);
 
-        for(int i = 1; i <= 11; i++)
+        for(int i = 1; i <= 22; i++)
         {
-            if(linestream >> key >> value1)
+            if(linestream >> value)
             {
-              if(i==11)
+              if(i==22)
               {
                 try {
-                  PUpTime = std::stol (value1);
+                  PUpTime = std::stol (value);
                 } catch (const std::invalid_argument& arg) {
                   PUpTime = 0;
                 } 
